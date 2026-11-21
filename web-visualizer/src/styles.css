@@ -1,0 +1,141 @@
+:root {
+  /* Paleta "Soft Twilight & Pastel Lavender" */
+  --bg-canvas: #251f38;
+  --bg-gradient: linear-gradient(180deg, #251f38 0%, #312949 55%, #3a3153 100%);
+
+  --surface-panel: rgba(58, 49, 83, 0.55);
+  --surface-elevated: rgba(70, 59, 99, 0.65);
+  --surface-sub: #221c35;
+  --surface-hover: rgba(208, 188, 252, 0.12);
+  --surface-popover: #322a4b;
+
+  --border-panel: rgba(208, 188, 252, 0.16);
+  --border-sub: rgba(208, 188, 252, 0.12);
+  --border-focus: #d0bcfc;
+
+  /* Acentos Pastel y Jerarquía Semántica */
+  --accent-lavender: #d0bcfc;
+  --accent-lavender-strong: #b796fe;
+  --accent-indigo: #6631db;
+  --accent-indigo-bright: #7b45f0;
+  --accent-pink: #e876bd;
+  --accent-pink-bright: #ff6cd2;
+  --accent-sky: #acd0ff;
+  --accent-rose: #f074a0;
+  --accent-mint: #6ee7b7;
+
+  /* Estados Semánticos Suaves */
+  --status-success: #6ee7b7;
+  --status-success-bg: rgba(110, 231, 183, 0.12);
+  --status-success-border: rgba(110, 231, 183, 0.28);
+
+  --status-error: #f074a0;
+  --status-error-bg: rgba(240, 116, 160, 0.14);
+  --status-error-border: rgba(240, 116, 160, 0.32);
+
+  /* Textos */
+  --text-heading: #ffffff;
+  --text-body: #f3eeff;
+  --text-secondary: #b9aed8;
+  --text-muted: #8e82b0;
+
+  /* Gradientes suaves */
+  --grad-hero: linear-gradient(135deg, #ffffff 15%, #d0bcfc 60%, #ff6cd2 100%);
+  --grad-cta: linear-gradient(135deg, #6631db 0%, #7b45f0 100%);
+  --grad-progress: linear-gradient(90deg, #7b45f0 0%, #d0bcfc 55%, #e876bd 100%);
+
+  --font-sans: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.light-theme {
+  --bg-canvas: #f7f4ff;
+  --bg-gradient: linear-gradient(180deg, #f7f4ff 0%, #efe9ff 60%, #e7dffb 100%);
+
+  --surface-panel: rgba(255, 255, 255, 0.85);
+  --surface-elevated: rgba(243, 237, 255, 0.92);
+  --surface-sub: #ffffff;
+  --surface-hover: rgba(102, 49, 219, 0.08);
+  --surface-popover: #ffffff;
+
+  --border-panel: rgba(102, 49, 219, 0.18);
+  --border-sub: rgba(102, 49, 219, 0.13);
+  --border-focus: #7b45f0;
+
+  --accent-lavender: #6631db;
+  --accent-lavender-strong: #5825c9;
+  --accent-indigo: #6631db;
+  --accent-indigo-bright: #7b45f0;
+  --accent-pink: #c2298a;
+  --accent-pink-bright: #d62898;
+  --accent-sky: #1e60b8;
+  --accent-rose: #d93870;
+  --accent-mint: #059669;
+
+  --status-success: #059669;
+  --status-success-bg: rgba(5, 150, 105, 0.1);
+  --status-success-border: rgba(5, 150, 105, 0.28);
+
+  --status-error: #d93870;
+  --status-error-bg: rgba(217, 56, 112, 0.11);
+  --status-error-border: rgba(217, 56, 112, 0.3);
+
+  --text-heading: #1e1633;
+  --text-body: #281e42;
+  --text-secondary: #584c78;
+  --text-muted: #7c709e;
+
+  --grad-hero: linear-gradient(135deg, #251f38 15%, #6631db 60%, #d62898 100%);
+  --grad-cta: linear-gradient(135deg, #6631db 0%, #7b45f0 100%);
+  --grad-progress: linear-gradient(90deg, #6631db 0%, #b796fe 55%, #e876bd 100%);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  min-height: 100vh;
+  background-color: var(--bg-canvas);
+  background-image: var(--bg-gradient);
+  background-attachment: fixed;
+  color: var(--text-body);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+code,
+pre,
+.mono {
+  font-family: var(--font-mono);
+  font-feature-settings: 'liga' 1, 'calt' 1;
+}
+
+/* Scrollbars suaves */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(208, 188, 252, 0.24);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(208, 188, 252, 0.45);
+}

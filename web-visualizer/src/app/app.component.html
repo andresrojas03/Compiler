@@ -1,0 +1,633 @@
+<div class="studio-shell" [class.light-theme]="lightTheme()">
+  <!-- =======================================================================
+       TOUR INTERACTIVO DE BIENVENIDA (SPOTLIGHT + POPOVER)
+       ======================================================================= -->
+  <app-onboarding-tour
+    [active]="tourActive()"
+    [stepIndex]="tourStepIndex()"
+    (nextStep)="nextTourStep()"
+    (prevStep)="prevTourStep()"
+    (goToStep)="goToTourStep($event)"
+    (closeTour)="closeTour()"
+  ></app-onboarding-tour>
+
+  <!-- =======================================================================
+       NIVEL 1 — HEADER MINIMALISTA (1 SOLA FILA COMPACTA)
+       ======================================================================= -->
+  <header class="studio-header">
+    <div class="brand-cluster">
+      <span class="arch-pill mono">LL(1) · SDT · TAC</span>
+      <h1 class="hero-title">Visualizador de Compilación</h1>
+    </div>
+
+    <div class="header-pills">
+      <button
+        type="button"
+        class="ghost-pill"
+        (click)="openTour()"
+        title="Abrir el recorrido interactivo de 5 pasos"
+      >
+        <span class="guide-icon">?</span>
+        Guía de uso
+      </button>
+
+      <button
+        type="button"
+        class="ghost-pill"
+        [class.pill-active]="strictMode()"
+        (click)="toggleStrictMode()"
+        title="Alternar entre Modo Compatible (inferencia) y Modo Estricto (declaración obligatoria)"
+      >
+        <span class="status-dot" [class.dot-active]="strictMode()"></span>
+        Modo Semántico:
+        <strong>{{ strictMode() ? 'Estricto' : 'Compatible' }}</strong>
+      </button>
+
+      <button
+        type="button"
+        class="ghost-pill"
+        (click)="downloadTraceJson()"
+        title="Descargar TraceStep[] en formato JSON"
+      >
+        Exportar JSON
+      </button>
+
+      <button
+        type="button"
+        class="ghost-pill"
+        [class.pill-active]="lightTheme()"
+        (click)="toggleTheme()"
+        title="Alternar contraste claro para proyector"
+      >
+        {{ lightTheme() ? 'Modo Crepúsculo' : 'Modo Proyector' }}
+      </button>
+    </div>
+  </header>
+
+  <!-- =======================================================================
+       NIVEL 2 — BARRA UNIFICADA DE ENTRADA Y CONTROL DE EJECUCIÓN (2 COLUMNAS)
+       ======================================================================= -->
+  <section class="control-deck">
+    <!-- PASO 1 DEL TOUR: Zona de Código y Casos de Prueba -->
+    <div
+      id="tour-step-1"
+      class="glass-card input-station"
+      [class.tour-spotlight]="isTourSpotlit(1)"
+    >
+      <div class="station-toolbar">
+        <div class="preset-selector-group">
+          <select
+            class="preset-select"
+            [ngModel]="activePresetId()"
+            (ngModelChange)="onPresetSelectChange($event)"
+            aria-label="Cargar caso de prueba"
+          >
+            <option value="custom" disabled>Cargar caso de prueba...</option>
+            <optgroup label="Válidos (PDF)">
+              <option *ngFor="let p of validPresets" [value]="p.id">
+                {{ p.label }}
+              </option>
+            </optgroup>
+            <optgroup label="Inválidos (PDF)">
+              <option *ngFor="let p of invalidPresets" [value]="p.id">
+                {{ p.label }}
+              </option>
+            </optgroup>
+            <optgroup label="Casos Extra">
+              <option *ngFor="let p of extraPresets" [value]="p.id">
+                {{ p.label }}
+              </option>
+            </optgroup>
+          </select>
+
+          <div class="quick-pills">
+            <button
+              *ngFor="let qp of quickPillPresets"
+              type="button"
+              class="quick-pill mono"
+              [class.quick-pill-active]="activePresetId() === qp.id"
+              [class.quick-pill-err]="qp.category === 'invalid'"
+              (click)="loadPreset(qp)"
+              [title]="qp.description"
+            >
+              {{ qp.shortLabel }}
+            </button>
+          </div>
+        </div>
+
+        <div class="compile-actions">
+          <button
+            type="button"
+            class="btn-step-mode"
+            (click)="runCompilation(true)"
+            title="Compilar y posicionarse en el Paso 1"
+          >
+            Paso a paso
+          </button>
+          <button
+            type="button"
+            class="btn-compile-cta"
+            (click)="runCompilation(false)"
+            title="Compilar entrada y mostrar resultado final"
+          >
+            Compilar
+          </button>
+        </div>
+      </div>
+
+      <div class="code-input-wrapper">
+        <textarea
+          class="code-textarea mono"
+          rows="2"
+          [ngModel]="sourceCode()"
+          (ngModelChange)="onCodeChange($event)"
+          placeholder="Ingresa sentencias terminadas en ';' (ej. x = a + b * c;)"
+          spellcheck="false"
+        ></textarea>
+      </div>
+    </div>
+
+    <!-- PASO 2 DEL TOUR: Controles de Ejecución Paso a Paso -->
+    <div
+      id="tour-step-2"
+      class="glass-card player-station"
+      [class.tour-spotlight]="isTourSpotlit(2)"
+    >
+      <div class="player-top-row">
+        <div class="transport-bar">
+          <button
+            type="button"
+            class="transport-btn mono"
+            (click)="resetToStart()"
+            [disabled]="totalSteps() === 0 || currentStepIndex() <= 1"
+            title="Reiniciar al Paso 1"
+          >
+            |&lt;
+          </button>
+          <button
+            type="button"
+            class="transport-btn mono"
+            (click)="prevStep()"
+            [disabled]="totalSteps() === 0 || currentStepIndex() <= 1"
+            title="Paso Anterior (Flecha Izquierda)"
+          >
+            &lt;
+          </button>
+          <button
+            type="button"
+            class="transport-btn transport-play"
+            [class.is-playing]="isPlaying()"
+            (click)="toggleAutoPlay()"
+            [disabled]="totalSteps() === 0"
+            title="Reproducir / Pausar (Barra Espaciadora)"
+          >
+            <span *ngIf="!isPlaying()">▶ Auto-Play</span>
+            <span *ngIf="isPlaying()">⏸ Pausa</span>
+          </button>
+          <button
+            type="button"
+            class="transport-btn mono"
+            (click)="nextStep()"
+            [disabled]="totalSteps() === 0 || currentStepIndex() >= totalSteps()"
+            title="Siguiente Paso (Flecha Derecha)"
+          >
+            &gt;
+          </button>
+          <button
+            type="button"
+            class="transport-btn mono"
+            (click)="executeAll()"
+            [disabled]="totalSteps() === 0 || currentStepIndex() >= totalSteps()"
+            title="Ir al Paso Final"
+          >
+            &gt;|
+          </button>
+        </div>
+
+        <div class="player-meta">
+          <span class="kbd-hint" title="Atajos de teclado: Flechas Izquierda/Derecha y Espacio">
+            <kbd>←</kbd> <kbd>→</kbd> Navegar pasos
+          </span>
+          <span class="step-fraction mono">
+            Paso <strong>{{ currentStepIndex() }}</strong> / {{ totalSteps() }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Scrubber Interactivo Pastel -->
+      <div class="scrubber-container">
+        <div class="scrubber-track">
+          <div class="scrubber-fill" [style.width.%]="progressPercent()"></div>
+        </div>
+        <input
+          type="range"
+          class="scrubber-input"
+          [min]="totalSteps() > 0 ? 1 : 0"
+          [max]="totalSteps()"
+          [value]="currentStepIndex()"
+          (input)="jumpToStep(+$any($event.target).value)"
+          aria-label="Línea de tiempo de pasos de compilación"
+        />
+      </div>
+
+      <!-- Píldora de Estado en Vivo -->
+      <div
+        class="live-telemetry-pill"
+        *ngIf="activeStep() as step"
+        [class.telemetry-error]="step.phase === 'ERROR' || step.phase === 'ROLLBACK'"
+        [class.telemetry-emit]="step.action === 'EMIT'"
+      >
+        <span class="telemetry-phase mono" [attr.data-phase]="activePhaseBadge()">
+          {{ activePhaseBadge() }}
+        </span>
+        <span class="telemetry-action mono">{{ step.action }}</span>
+        <span class="telemetry-prod mono" *ngIf="step.production">
+          {{ step.production }}
+        </span>
+        <span class="telemetry-emit-badge mono" *ngIf="step.emitted_tac">
+          {{ step.emitted_tac }}
+        </span>
+        <span class="telemetry-msg">{{ step.message }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- =======================================================================
+       NIVEL 3 — CINTA HORIZONTAL DE TOKENS (PASO 3 DEL TOUR)
+       ======================================================================= -->
+  <section
+    id="tour-step-3"
+    class="glass-card lexer-tape-section"
+    [class.tour-spotlight]="isTourSpotlit(3)"
+  >
+    <div class="tape-header">
+      <div class="tape-title-cluster">
+        <span class="section-title">Cinta Léxica de Tokens</span>
+        <span class="subtle-counter mono">{{ compilationResult().tokens.length }} unidades</span>
+      </div>
+
+      <!-- Diagnóstico de Error Léxico en línea si ocurre -->
+      <div
+        class="inline-lex-error"
+        *ngFor="let err of compilationResult().errors"
+        [hidden]="err.phase !== 'LEXING'"
+      >
+        <span class="err-dot"></span>
+        <strong>L{{ err.line }}:C{{ err.column }}</strong> — {{ err.message }}
+      </div>
+    </div>
+
+    <div class="horizontal-tape-scroll">
+      <div
+        *ngFor="let tok of compilationResult().tokens; let i = index; trackBy: trackByToken"
+        class="token-tile"
+        [class.tile-active]="i === activeTokenIndex()"
+        [class.tile-consumed]="i < activeTokenIndex()"
+        [class.tile-eof]="tok.type === 'EOF'"
+      >
+        <span class="tile-lexeme mono">{{ tok.lexeme }}</span>
+        <div class="tile-meta mono">
+          <span class="tile-type">{{ tok.type }}</span>
+          <span class="tile-coords">L{{ tok.line }}:C{{ tok.column }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =======================================================================
+       NIVEL 4 — MESA DE TRABAJO CENTRAL (55% IZQUIERDA / 45% DERECHA)
+       ======================================================================= -->
+  <main class="workbench-grid">
+    <!-- PASO 4 DEL TOUR — COLUMNA IZQUIERDA (55%): PILA LL(1) Y ATRIBUTOS SDT -->
+    <section
+      id="tour-step-4"
+      class="glass-card workbench-col"
+      [class.tour-spotlight]="isTourSpotlit(4)"
+    >
+      <div class="col-header">
+        <span class="section-title">Análisis Sintáctico LL(1) y Atributos SDT</span>
+        <span class="active-prod-pill mono" *ngIf="activeStep() as step">
+          {{ step.production || step.action }}
+        </span>
+      </div>
+
+      <!-- Pila Predictiva LL(1) -->
+      <div class="stack-stage">
+        <div class="sub-label-row">
+          <span class="sub-label">Pila Predictiva LL(1)</span>
+          <span class="sub-meta mono">Tope a la derecha · {{ activeLlStack().length }} símbolos</span>
+        </div>
+
+        <div class="ll-stack-row" *ngIf="activeLlStack().length > 0; else acceptedStack">
+          <div
+            *ngFor="let sym of activeLlStack(); let last = last; trackBy: trackByIndex"
+            class="ll-block mono"
+            [class.ll-block-top]="last"
+            [class.ll-block-term]="isTerminalSymbol(sym) && !last"
+          >
+            <span>{{ sym }}</span>
+            <span class="tope-tag" *ngIf="last">TOPE</span>
+          </div>
+        </div>
+        <ng-template #acceptedStack>
+          <div class="empty-stage mono">Pila vacía — Cadena aceptada ($)</div>
+        </ng-template>
+      </div>
+
+      <!-- Marcos de Atributos Activos (.inh / .place) -->
+      <div class="frames-stage">
+        <div class="sub-label-row">
+          <span class="sub-label">Marcos de Activación Semántica</span>
+          <div class="legend-cluster mono">
+            <span class="legend-inh">● .inh heredado</span>
+            <span class="legend-place">● .place sintetizado</span>
+          </div>
+        </div>
+
+        <div class="clean-table-wrapper">
+          <table class="minimal-table">
+            <thead>
+              <tr>
+                <th>Nivel</th>
+                <th>No Terminal</th>
+                <th>Regla Activa</th>
+                <th><span class="mono">.inh</span></th>
+                <th><span class="mono">.place</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let frame of activeCallFrames(); let idx = index; let last = last"
+                [class.frame-row-active]="last"
+              >
+                <td class="mono text-muted">#{{ idx }}</td>
+                <td class="mono symbol-col">{{ frame.non_terminal }}</td>
+                <td class="mono prod-col">{{ frame.production || '—' }}</td>
+                <td>
+                  <span class="val-inh mono" *ngIf="frame.inh; else emptyInh">
+                    {{ frame.inh }}
+                  </span>
+                  <ng-template #emptyInh><span class="text-muted">—</span></ng-template>
+                </td>
+                <td>
+                  <span class="val-place mono" *ngIf="frame.place; else emptyPlace">
+                    {{ frame.place }}
+                  </span>
+                  <ng-template #emptyPlace><span class="text-muted">—</span></ng-template>
+                </td>
+              </tr>
+              <tr *ngIf="activeCallFrames().length === 0">
+                <td colspan="5" class="empty-table-row">
+                  Sin marcos de activación en este instante de la traza.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Acordeón discreto al pie con Gramática LL(1) y Reglas SDT -->
+      <details class="grammar-accordion">
+        <summary>Especificación Gramatical LL(1) y Reglas SDT</summary>
+        <pre class="grammar-code mono">
+S  -> id = E ;        {{ '{' }} emit(id.name + " = " + E.place) {{ '}' }}
+E  -> T E'            {{ '{' }} E'.inh = T.place; E.place = E'.place {{ '}' }}
+E' -> + T E'1         {{ '{' }} t = newTemp(); emit(t = E'.inh + T.place); E'1.inh = t {{ '}' }}
+    | - T E'1         {{ '{' }} t = newTemp(); emit(t = E'.inh - T.place); E'1.inh = t {{ '}' }}
+    | ε               {{ '{' }} E'.place = E'.inh {{ '}' }}
+T  -> F T'            {{ '{' }} T'.inh = F.place; T.place = T'.place {{ '}' }}
+T' -> * F T'1         {{ '{' }} t = newTemp(); emit(t = T'.inh * F.place); T'1.inh = t {{ '}' }}
+    | / F T'1         {{ '{' }} t = newTemp(); emit(t = T'.inh / F.place); T'1.inh = t {{ '}' }}
+    | ε               {{ '{' }} T'.place = T'.inh {{ '}' }}
+F  -> ( E )           {{ '{' }} F.place = E.place {{ '}' }}
+    | id | num        {{ '{' }} F.place = token.lexeme {{ '}' }}</pre>
+      </details>
+    </section>
+
+    <!-- PASO 5 DEL TOUR — COLUMNA DERECHA (45%): CÓDIGO INTERMEDIO (TAC) Y SÍMBOLOS -->
+    <section
+      id="tour-step-5"
+      class="glass-card workbench-col"
+      [class.tour-spotlight]="isTourSpotlit(5)"
+    >
+      <div class="col-header">
+        <span class="section-title">Código de Tres Direcciones & Símbolos</span>
+
+        <!-- Segmented Control -->
+        <div class="segmented-control">
+          <button
+            type="button"
+            class="seg-btn"
+            [class.seg-active]="rightTab() === 'tac'"
+            (click)="rightTab.set('tac')"
+          >
+            TAC en Vivo & Optimización
+          </button>
+          <button
+            type="button"
+            class="seg-btn"
+            [class.seg-active]="rightTab() === 'symbols'"
+            (click)="rightTab.set('symbols')"
+          >
+            Tabla de Símbolos
+            <span class="seg-count mono">{{ activeSymbolSnapshot().length }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Banner Compacto de Estado Semántico / Atomicidad -->
+      <div
+        class="compact-status-banner"
+        [class.banner-ok]="compilationResult().success"
+        [class.banner-fail]="!compilationResult().success"
+      >
+        <div class="banner-headline">
+          <span *ngIf="compilationResult().success">
+            ✓ Compilación exitosa · {{ compilationResult().tacRaw.length }} instrucción(es) TAC
+            <span class="opt-delta-badge mono" *ngIf="eliminatedTacCount() > 0">
+              −{{ eliminatedTacCount() }} por optimización
+            </span>
+          </span>
+          <span *ngIf="!compilationResult().success">
+            ✕ Error
+            {{
+              compilationResult().errors[0]?.phase === 'LEXING'
+                ? 'léxico'
+                : compilationResult().errors[0]?.phase === 'SEMANTIC'
+                ? 'semántico'
+                : 'sintáctico'
+            }}
+            · Rollback aplicado (0 TAC emitido)
+          </span>
+        </div>
+
+        <div class="banner-errors" *ngIf="compilationResult().errors.length > 0">
+          <p *ngFor="let err of compilationResult().errors">
+            {{ err.message }}
+          </p>
+        </div>
+      </div>
+
+      <!-- PESTAÑA 1: TAC EN VIVO & OPTIMIZACIÓN -->
+      <div class="tac-workspace" *ngIf="rightTab() === 'tac'">
+        <!-- Buffer en el paso activo -->
+        <div class="live-buffer-strip">
+          <div class="sub-label-row">
+            <span class="sub-label">Staging Buffer TAC (Paso {{ currentStepIndex() }})</span>
+            <span class="rollback-pill mono" *ngIf="isAtRollbackStep()">
+              ROLLBACK EJECUTADO
+            </span>
+          </div>
+
+          <div class="live-tac-chips" *ngIf="activeTacSnapshot().length > 0; else emptyLiveBuffer">
+            <div
+              *ngFor="let line of activeTacSnapshot(); let idx = index"
+              class="live-tac-chip mono"
+              [class.chip-just-emitted]="activeStep()?.emitted_tac === line"
+            >
+              <span class="chip-idx">{{ idx + 1 }}.</span>
+              <span>{{ line }}</span>
+              <span class="emit-spark" *ngIf="activeStep()?.emitted_tac === line">emit()</span>
+            </div>
+          </div>
+          <ng-template #emptyLiveBuffer>
+            <div class="empty-stage mono">
+              {{
+                isAtRollbackStep()
+                  ? 'Buffer vaciado atómicamente por Rollback — 0 instrucciones'
+                  : 'Sin emisiones en el buffer hasta este paso'
+              }}
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Comparativa Paralela: TAC Crudo (Parsing) vs TAC Optimizado -->
+        <div class="tac-comparison-grid">
+          <!-- Columna TAC Crudo -->
+          <div class="tac-pane">
+            <div class="pane-header">
+              <span>TAC Crudo (Parsing)</span>
+              <span class="pane-count mono">{{ compilationResult().tacRaw.length }}</span>
+            </div>
+
+            <div class="tac-list mono" *ngIf="compilationResult().tacRaw.length > 0; else noRawTac">
+              <div
+                *ngFor="let instr of compilationResult().tacRaw"
+                class="tac-row"
+                [class.tac-row-folded]="isRawInstrOptimizedOut(instr.text)"
+              >
+                <span class="tac-idx">{{ instr.index }}</span>
+                <span class="tac-code">{{ instr.text }}</span>
+                <span
+                  class="pink-tag"
+                  *ngIf="isRawInstrOptimizedOut(instr.text)"
+                  title="Instrucción fusionada o simplificada en el pase de optimización"
+                >
+                  fusionada
+                </span>
+              </div>
+            </div>
+            <ng-template #noRawTac>
+              <div class="empty-stage mono">0 instrucciones</div>
+            </ng-template>
+          </div>
+
+          <!-- Columna TAC Optimizado -->
+          <div class="tac-pane tac-pane-optimized">
+            <div class="pane-header">
+              <span>TAC Optimizado</span>
+              <span class="pane-count mono">{{ compilationResult().tacOptimized.length }}</span>
+            </div>
+
+            <div
+              class="tac-list mono"
+              *ngIf="compilationResult().tacOptimized.length > 0; else noOptTac"
+            >
+              <div
+                *ngFor="let instr of compilationResult().tacOptimized"
+                class="tac-row tac-row-opt"
+              >
+                <span class="tac-idx">{{ instr.index }}</span>
+                <span class="tac-code">{{ instr.text }}</span>
+                <span
+                  class="pink-tag"
+                  *ngIf="isOptInstrTransformed(instr.text)"
+                >
+                  optimizada
+                </span>
+              </div>
+            </div>
+            <ng-template #noOptTac>
+              <div class="empty-stage mono">0 instrucciones</div>
+            </ng-template>
+          </div>
+        </div>
+
+        <!-- Transformaciones del Optimizador -->
+        <div class="opt-log-box" *ngIf="compilationResult().optimizationNotes.length > 0">
+          <span class="sub-label">Optimizaciones Aplicadas</span>
+          <div class="opt-notes-list">
+            <div
+              *ngFor="let note of compilationResult().optimizationNotes"
+              class="opt-note-item mono"
+            >
+              <span class="pink-bullet">◆</span>
+              <span>{{ note }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PESTAÑA 2: TABLA DE SÍMBOLOS -->
+      <div class="symbols-workspace" *ngIf="rightTab() === 'symbols'">
+        <div class="clean-table-wrapper">
+          <table class="minimal-table">
+            <thead>
+              <tr>
+                <th>Identificador</th>
+                <th>Tipo</th>
+                <th>Alcance</th>
+                <th>Estado</th>
+                <th>Último Place</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let sym of activeSymbolSnapshot()">
+                <td class="mono symbol-col">{{ sym.name }}</td>
+                <td>
+                  <span class="sym-type-pill mono" [attr.data-type]="sym.data_type">
+                    {{ sym.data_type }}
+                  </span>
+                </td>
+                <td class="mono text-secondary">{{ sym.scope_id }} (N{{ sym.scope_level }})</td>
+                <td>
+                  <span class="init-status" [class.is-init]="sym.initialized">
+                    {{ sym.initialized ? 'Inicializada' : 'Sin inicializar' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="val-place mono" *ngIf="sym.last_place; else noRef">
+                    {{ sym.last_place }}
+                  </span>
+                  <ng-template #noRef><span class="text-muted">—</span></ng-template>
+                </td>
+              </tr>
+              <tr *ngIf="activeSymbolSnapshot().length === 0">
+                <td colspan="5" class="empty-table-row">
+                  Tabla de símbolos vacía en este paso.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="warnings-strip" *ngIf="compilationResult().warnings.length > 0">
+          <span class="sub-label">Advertencias Semánticas ({{ compilationResult().warnings.length }})</span>
+          <div class="warn-item" *ngFor="let w of compilationResult().warnings">
+            <span class="mono">L{{ w.line }}:C{{ w.column }}</span> — {{ w.message }}
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
