@@ -1,0 +1,20 @@
+# Node / Angular (web-visualizer)
+node_modules/
+.angular/
+dist/
+out-tsc/
+.cache/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
