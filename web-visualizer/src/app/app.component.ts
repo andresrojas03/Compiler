@@ -26,7 +26,6 @@ export interface PresetCase {
   readonly shortLabel: string;
   readonly category: 'valid' | 'invalid' | 'semantic';
   readonly code: string;
-  readonly strict?: boolean;
   readonly description: string;
 }
 
@@ -100,13 +99,12 @@ export class AppComponent implements OnDestroy {
     // Presets extra para demostrar Optimización y Ámbitos Semánticos
     {
       id: 'semantic-opt',
-      label: 'Extra — Ámbitos { } + Plegado Algebraico (Modo Estricto)',
-      shortLabel: 'Ámbitos + Opt',
+      label: 'Extra — Plegado de Constantes + Identidad (x = a + 0 + 2 * 3;)',
+      shortLabel: 'Optimización TAC',
       category: 'semantic',
-      strict: true,
-      code: `int a;\nint b;\nfloat x;\na = 2;\nb = 3;\n{\n  int c;\n  c = 4;\n  x = a + 0 + b * c;\n}`,
+      code: 'x = a + 0 + 2 * 3;',
       description:
-        'Modo Estricto con bloques { }, tabla de símbolos por ámbitos y optimización algebraica.',
+        'Demuestra plegado de constantes (2 * 3 -> 6) y simplificación algebraica (a + 0 -> a).',
     },
   ];
 
@@ -128,7 +126,6 @@ export class AppComponent implements OnDestroy {
 
   // Signals de estado principal
   readonly sourceCode = signal<string>('x = a + b * c;');
-  readonly strictMode = signal<boolean>(false);
   readonly lightTheme = signal<boolean>(false);
   readonly activePresetId = signal<string>('valid-c');
   readonly rightTab = signal<'tac' | 'symbols'>('tac');
@@ -318,11 +315,6 @@ export class AppComponent implements OnDestroy {
   loadPreset(preset: PresetCase): void {
     this.stopAutoPlay();
     this.activePresetId.set(preset.id);
-    if (preset.strict !== undefined) {
-      this.strictMode.set(preset.strict);
-    } else {
-      this.strictMode.set(false);
-    }
     this.sourceCode.set(preset.code);
     this.runCompilation(false);
   }
@@ -332,18 +324,13 @@ export class AppComponent implements OnDestroy {
     this.activePresetId.set('custom');
   }
 
-  toggleStrictMode(): void {
-    this.strictMode.update((v) => !v);
-    this.runCompilation(false);
-  }
-
   toggleTheme(): void {
     this.lightTheme.update((v) => !v);
   }
 
   runCompilation(startAtFirstStep: boolean = false): void {
     this.stopAutoPlay();
-    const res = compileSource(this.sourceCode(), this.strictMode());
+    const res = compileSource(this.sourceCode(), false);
     this.compilationResult.set(res);
     this.currentStepIndex.set(
       startAtFirstStep ? (res.trace.length > 0 ? 1 : 0) : res.trace.length
@@ -408,17 +395,6 @@ export class AppComponent implements OnDestroy {
       this.timerId = null;
     }
     this.isPlaying.set(false);
-  }
-
-  downloadTraceJson(): void {
-    const json = this.compilationResult().tracer.exportJson(2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'trace_steps.json';
-    a.click();
-    URL.revokeObjectURL(url);
   }
 
   isTerminalSymbol(sym: string): boolean {

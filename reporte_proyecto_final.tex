@@ -1,0 +1,653 @@
+\documentclass[11pt, letterpaper]{article}
+
+% ============================================================================
+% PAQUETES Y CODIFICACIÓN
+% ============================================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish, es-tabla, es-nodecimaldot]{babel}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage{hyperref}
+
+\tcbuselibrary{skins, breakable}
+
+% ============================================================================
+% PALETA DE COLORES (SOFT TWILIGHT & PASTEL LAVENDER)
+% ============================================================================
+\definecolor{TwilightBg}{HTML}{251F38}
+\definecolor{TwilightPanel}{HTML}{322A4B}
+\definecolor{PastelLavender}{HTML}{7B45F0}
+\definecolor{PastelPink}{HTML}{C2298A}
+\definecolor{PastelSky}{HTML}{1E60B8}
+\definecolor{MintSuccess}{HTML}{059669}
+\definecolor{RoseError}{HTML}{D93870}
+\definecolor{CodeBg}{HTML}{F7F5FF}
+\definecolor{CodeFrame}{HTML}{D0BCFC}
+\definecolor{CodeKeyword}{HTML}{6631DB}
+\definecolor{CodeString}{HTML}{B81D7A}
+\definecolor{CodeComment}{HTML}{6E6588}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=PastelLavender,
+    urlcolor=PastelPink,
+    citecolor=PastelSky,
+    pdftitle={Reporte Proyecto Final Compiladores - Andrés Urquiza Rojas},
+    pdfauthor={Andrés Urquiza Rojas}
+}
+
+% ============================================================================
+% CONFIGURACIÓN CRÍTICA DE LISTINGS (SOPORTE UTF-8 / TILDES EN ESPAÑOL)
+% ============================================================================
+\lstdefinelanguage{TypeScript}{
+    keywords={export, import, from, class, interface, enum, public, private, readonly, constructor, return, if, else, while, for, of, in, const, let, new, throw, try, catch, switch, case, default, true, false, null, void, number, string, boolean},
+    sensitive=true,
+    comment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]',
+    morestring=[b]"
+}
+
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    backgroundcolor=\color{CodeBg},
+    frame=single,
+    rulecolor=\color{CodeFrame},
+    keywordstyle=\color{CodeKeyword}\bfseries,
+    stringstyle=\color{CodeString},
+    commentstyle=\color{CodeComment}\itshape,
+    numbers=left,
+    numberstyle=\tiny\color{CodeComment},
+    numbersep=7pt,
+    tabsize=4,
+    breaklines=true,
+    breakatwhitespace=false,
+    showstringspaces=false,
+    captionpos=b,
+    upquote=true,
+    literate=
+        {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'\i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+        {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+        {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+        {¿}{{?`}}1 {¡}{{!`}}1 {ε}{{$\varepsilon$}}1 {->}{{$\rightarrow$}}2
+}
+
+% Cajas estilizadas para arquitectura, trazas y placeholders
+\newtcolorbox{archbox}[1]{
+    colback=CodeBg,
+    colframe=PastelLavender,
+    fonttitle=\bfseries,
+    coltitle=white,
+    colbacktitle=PastelLavender,
+    title={#1},
+    rounded corners,
+    boxrule=0.8pt
+}
+
+\newtcolorbox{tracebox}[1]{
+    colback=white,
+    colframe=PastelSky,
+    fonttitle=\bfseries\footnotesize,
+    coltitle=white,
+    colbacktitle=PastelSky,
+    title={#1},
+    rounded corners,
+    boxrule=0.7pt,
+    breakable
+}
+
+\newtcolorbox{errbox}[1]{
+    colback=RoseError!6,
+    colframe=RoseError,
+    fonttitle=\bfseries\footnotesize,
+    coltitle=white,
+    colbacktitle=RoseError,
+    title={#1},
+    rounded corners,
+    boxrule=0.8pt
+}
+
+\newtcolorbox{figplaceholder}[1]{
+    colback=CodeBg,
+    colframe=PastelLavender!65,
+    boxrule=1pt,
+    arc=4mm,
+    title={\textbf{Espacio para Captura de Pantalla --- Visualizador Web Didáctico}: #1},
+    colbacktitle=TwilightPanel,
+    coltitle=white,
+    fonttitle=\footnotesize
+}
+
+% ============================================================================
+% INICIO DEL DOCUMENTO
+% ============================================================================
+\begin{document}
+
+% ----------------------------------------------------------------------------
+% PORTADA ACADÉMICA
+% ----------------------------------------------------------------------------
+\begin{titlepage}
+    \centering
+    \vspace*{0.8cm}
+    {\Large \textbf{UNIVERSIDAD NACIONAL AUTÓNOMA DE MÉXICO}}\\[0.25cm]
+    {\large \textbf{FACULTAD DE INGENIERÍA}}\\[0.2cm]
+    {\normalsize División de Ingeniería Eléctrica --- Departamento de Computación}\\[1.6cm]
+
+    \rule{\linewidth}{0.8pt}\\[0.5cm]
+    {\LARGE \textbf{Integración de Analizador Léxico, Parser LL(1) y Generador de Código Intermedio (TAC) con Visualizador Web Interactivo}}\\[0.4cm]
+    \rule{\linewidth}{0.8pt}\\[1.2cm]
+
+    {\large \textbf{Reporte Técnico de Proyecto Final}}\\[0.3cm]
+    {\normalsize Asignatura: Compiladores}\\[2.0cm]
+
+    \begin{tabular}{rl}
+        \textbf{Autor:} & Andrés Urquiza Rojas \\[0.35cm]
+        \textbf{Profesora:} & Melissa Brigitthe Hinojosa \\[0.35cm]
+        \textbf{Semestre:} & 2027-1 \\
+    \end{tabular}
+
+    \vfill
+    {\normalsize Ciudad Universitaria, Ciudad de México}\\[0.15cm]
+    {\normalsize Noviembre de 2026}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ============================================================================
+% SECCIÓN 1: ANTECEDENTES
+% ============================================================================
+\section{Antecedentes}
+
+\subsection{Objetivos del Proyecto}
+
+\subsubsection*{Objetivo General}
+Diseñar, implementar y verificar un compilador modular integrado en Python que una las fases de análisis léxico, análisis sintáctico descendente predictivo $LL(1)$, análisis semántico con tabla de símbolos por ámbitos, generación de código intermedio de tres direcciones (\textit{Three-Address Code}, TAC) mediante Traducción Dirigida por Sintaxis (\textit{Syntax-Directed Translation}, SDT) y optimización no destructiva de código intermedio; complementado, como aporte personal didáctico para la asignatura, con un visualizador web interactivo que permite inspeccionar paso a paso el proceso de compilación.
+
+\subsubsection*{Objetivos Específicos}
+\begin{enumerate}[leftmargin=1.8em]
+    \item Unificar los módulos desarrollados en entregas previas (Analizador Léxico y Analizador Sintáctico $LL(1)$) bajo un contrato inmutable de tokens (\texttt{Token(type, lexeme, line, column)}) libre de efectos secundarios.
+    \item Extender la gramática $LL(1)$ sin recursión izquierda para soportar sentencias de asignación obligatoriamente terminadas en punto y coma ($\texttt{S} \rightarrow \texttt{id = E ;}$), declaraciones explícitas ($\texttt{int}$, $\texttt{float}$) y bloques léxicos anidados ($\texttt{\{ StmtList \}}$).
+    \item Implementar acciones semánticas en tiempo de análisis sintáctico utilizando atributos heredados ($\texttt{.inh}$) y sintetizados ($\texttt{.place}$), generando temporales secuenciales ($\texttt{t1, t2, \dots}$) mediante $\texttt{newTemp()}$ y $\texttt{emit()}$ sin construir un árbol sintáctico abstracto (AST) intermedio.
+    \item Garantizar atomicidad transaccional estricta mediante un buffer de emisión con operaciones $\texttt{commit()}$ y $\texttt{rollback()}$, asegurando que ante cualquier error léxico, sintáctico o semántico se descarten los temporales intermedios y la salida TAC sea exactamente vacía.
+    \item Incorporar un pase de optimización sobre el TAC crudo (plegado de constantes, simplificación algebraica, propagación de copias y fusión de temporales redundantes) y desarrollar como contribución adicional una herramienta web interactiva de apoyo académico para futuros cursos de la profesora y del Departamento de Computación.
+\end{enumerate}
+
+\subsection{Marco Conceptual de las Fases de Compilación}
+
+\begin{itemize}[leftmargin=1.6em]
+    \item \textbf{Análisis Léxico (Escaneo)}: Primera fase del compilador encargada de leer el flujo de caracteres del programa fuente, omitir elementos no significativos (espacios en blanco, tabuladores, saltos de línea y comentarios \texttt{//} o \texttt{/* ... */}) y agrupar los caracteres en unidades léxicas indivisibles denominadas \textit{tokens}. Asimismo, detecta errores léxicos cuando aparecen símbolos fuera del alfabeto del lenguaje o literales decimales malformados (ej.\ \texttt{3.} o \texttt{.5}).
+    \item \textbf{Análisis Sintáctico Descendente Predictivo $LL(1)$}: Verifica que la secuencia de tokens cumpla con las reglas estructurales de una gramática libre de contexto no ambigua y sin recursión izquierda. El prefijo $LL(1)$ indica que la entrada se procesa de izquierda a derecha (\textit{Left-to-right}), produciendo una derivación por la izquierda (\textit{Leftmost derivation}) con un único símbolo de anticipación (\textit{lookahead} $= 1$) guiado por los conjuntos disjuntos $\text{FIRST}$ y $\text{FOLLOW}$.
+    \item \textbf{Análisis Semántico y Tabla de Símbolos}: Valida la coherencia de tipos de datos, el alcance léxico (\textit{scoping}) de los identificadores, el sombreado (\textit{shadowing}) en bloques anidados y la detección de divisiones explícitas entre cero literal (\texttt{0}, \texttt{0.0}, \texttt{0.00}). La Tabla de Símbolos registra cada identificador con su tipo, ámbito, estado de inicialización, coordenadas de aparición y último temporal o lugar asignado (\texttt{last\_place}).
+    \item \textbf{Generación de Código Intermedio (TAC) mediante SDT}: El Código de Tres Direcciones representa expresiones arbitrariamente complejas mediante una secuencia lineal de instrucciones elementales de la forma $\texttt{resultado = arg1 op arg2}$ o copias $\texttt{resultado = arg1}$, donde cada instrucción contiene a lo sumo un operador aritmético. A través de un esquema de Traducción Dirigida por Sintaxis $L$-atribuido, las reglas gramaticales propagan operandos izquierdos hacia abajo usando atributos heredados ($\texttt{.inh}$) y devuelven referencias o temporales hacia arriba usando atributos sintetizados ($\texttt{.place}$).
+    \item \textbf{Optimización de Código Intermedio}: Fase posterior no destructiva que transforma una copia de la secuencia TAC cruda para reducir el número de instrucciones y variables temporales sin alterar la semántica observable del programa.
+\end{itemize}
+
+% ============================================================================
+% SECCIÓN 2: DESCRIPCIÓN DEL SISTEMA E INTEGRACIÓN
+% ============================================================================
+\section{Descripción del Sistema e Integración}
+
+El sistema se estructuró bajo una arquitectura modular cuyo núcleo principal reside en Python 3.10+, complementado con una versión interactiva en línea concebida como material didáctico abierto.
+
+\begin{archbox}{Arquitectura General del Compilador y Telemetría Paso a Paso}
+\centering
+\footnotesize
+\texttt{Código Fuente} $\longrightarrow$ \textbf{Lexer} (\texttt{Token[]}) $\longrightarrow$ \textbf{LLParserSDT} ($\texttt{.inh} / \texttt{.place}$) $\longrightarrow$ \textbf{CodeGenerator} (\texttt{Staging Buffer})\\
+$\downarrow$ \textit{Éxito}: \texttt{commit()} $\longrightarrow$ \textbf{TAC Crudo} $\longrightarrow$ \textbf{Optimizador} $\longrightarrow$ \textbf{TAC Optimizado}\\
+$\downarrow$ \textit{Error}: \texttt{rollback()} $\longrightarrow$ \textbf{Vaciamiento Atómico (0 TAC)} $+$ \textbf{Diagnóstico L:C}\\
+$\updownarrow$ \textit{En cada transición}: \textbf{CompilerTracer} captura instantáneas inmutables \texttt{TraceStep[]} (JSON)
+\end{archbox}
+
+\subsection{Núcleo Compilador en Python (Entregable Principal)}
+El núcleo en Python 3.10+ está diseñado sin dependencias externas y organizado en cuatro paquetes desacoplados:
+\begin{enumerate}[leftmargin=1.8em]
+    \item \texttt{/lexer} (\texttt{tokens.py}, \texttt{lexer.py}): Define la enumeración \texttt{TokenType}, el dataclass inmutable \texttt{Token(type, lexeme, line, column)} y la excepción estructurada \texttt{LexicalError}. A diferencia de las implementaciones preliminares de las Prácticas 1 y 2 —donde el lexer imprimía directamente en consola o devolvía cadenas simples sin metadatos—, el módulo fue sanitizado para eliminar todo efecto secundario (\texttt{print()}) y preservar la ubicación exacta de línea y columna tras comentarios multilínea.
+    \item \texttt{/parser\_code\_gen} (\texttt{parser.py}, \texttt{code\_generator.py}, \texttt{symbol\_table.py}, \texttt{tracer.py}): Contiene el parser predictivo recursivo \texttt{LLParserSDT}, la tabla de símbolos jerárquica \texttt{SymbolTable}, el generador transaccional \texttt{CodeGenerator} y el recolector de telemetría \texttt{CompilerTracer}.
+    \item \texttt{/main} (\texttt{main.py}): Interfaz de línea de comandos (CLI) con menú interactivo, ejecución de la batería oficial de ejemplos (\texttt{--official}), compilación directa (\texttt{-e}), lectura desde archivo (\texttt{-f}) y visor de traza paso a paso (\texttt{--trace}).
+\end{enumerate}
+
+\subsection{Aporte Personal Académico: Visualizador Web Interactivo para la Asignatura}
+Como una iniciativa y contribución personal más allá de los requerimientos base del proyecto, se portó el motor completo del compilador 1:1 a TypeScript dentro de una aplicación web interactiva desarrollada en Angular (\texttt{web-visualizer/}) y publicada en línea para acceso directo desde cualquier navegador sin necesidad de instalación previa.
+
+El propósito de este aporte es ofrecer una herramienta visual y pedagógica que pueda ser utilizada como material de apoyo en futuros semestres de la asignatura \textit{Compiladores} impartida por la profesora Melissa Brigitthe Hinojosa, así como por estudiantes del Departamento de Computación de la Facultad de Ingeniería de la UNAM. A menudo, conceptos abstractos como la eliminación de la recursión izquierda, la propagación de atributos heredados ($\texttt{.inh}$) frente a los sintetizados ($\texttt{.place}$) o el vaciamiento transaccional (\textit{rollback}) del código de tres direcciones resultan complejos de seguir únicamente en pizarrón o en salidas planas de terminal.
+
+La plataforma web resuelve esta brecha didáctica mediante:
+\begin{itemize}[leftmargin=1.6em]
+    \item \textbf{Estudio Visual Sincronizado en 4 Niveles (\textit{Soft Twilight \& Pastel Lavender})}: Permite observar simultáneamente la cinta horizontal de tokens con el puntero \textit{lookahead} en vivo, el crecimiento y reducción de la pila predictiva $LL(1)$, la tabla de marcos de activación coloreando en azul cielo (\texttt{\#ACD0FF}) los atributos heredados \texttt{.inh} y en rosa (\texttt{\#FF6CD2}) los atributos sintetizados \texttt{.place}, y la comparación paralela entre el TAC crudo y el TAC optimizado.
+    \item \textbf{Recorrido Guiado de Bienvenida (\texttt{OnboardingTour})}: Integra un tour interactivo de 5 pasos con efecto \textit{Spotlight} que explica a los alumnos cómo cargar expresiones válidas e inválidas y cómo avanzar o retroceder en el tiempo de compilación usando las flechas del teclado ($\leftarrow$ y $\rightarrow$).
+\end{itemize}
+
+\begin{figplaceholder}{Vista General del Estudio Web Didáctico y Tour Interactivo Spotlight}
+\centering
+\vspace{0.3cm}
+\textit{Espacio reservado para insertar captura de la aplicación web interactiva mostrando:}\\
+\texttt{[Nivel 1: Header Minimalista] + [Nivel 2: Editor de Código y Reproductor TraceStep]}\\
+\texttt{[Nivel 3: Cinta Horizontal de Tokens] + [Nivel 4: Pila LL(1), Marcos .inh/.place y TAC]}
+\vspace{0.2cm}
+% Para incluir imagen real descomentar:
+% \includegraphics[width=0.92\linewidth]{captura_visualizador_web.png}
+\end{figplaceholder}
+
+% ============================================================================
+% SECCIÓN 3: ESPECIFICACIÓN FORMAL Y LÓGICA DESARROLLADA
+% ============================================================================
+\section{Especificación Formal y Lógica Desarrollada}
+
+\subsection{Gramática $LL(1)$ sin Recursión Izquierda}
+La gramática original de expresiones aritméticas con recursión izquierda ($E \rightarrow E + T \mid T$, $T \rightarrow T * F \mid F$) produce ciclos infinitos en un analizador descendente predictivo. Se aplicó la transformación estándar de eliminación de recursión izquierda e incorporación de la sentencia de asignación obligatoria con punto y coma ($S \rightarrow \text{id} = E ;$), además de las producciones de programa, declaraciones y bloques de ámbito:
+
+\begin{align*}
+    \text{Program} &\rightarrow \text{Stmt}\ \text{StmtList} \\
+    \text{StmtList} &\rightarrow \text{Stmt}\ \text{StmtList} \;\mid\; \varepsilon \\
+    \text{Stmt} &\rightarrow \text{Decl} \;\mid\; S \;\mid\; \text{Block} \\
+    \text{Decl} &\rightarrow \text{Type}\ \textbf{id}\ \textbf{;} \\
+    \text{Type} &\rightarrow \textbf{int} \;\mid\; \textbf{float} \\
+    \text{Block} &\rightarrow \textbf{\{}\ \text{StmtList}\ \textbf{\}} \\[0.2cm]
+    S &\rightarrow \textbf{id}\ \textbf{=}\ E\ \textbf{;} \\
+    E &\rightarrow T\ E' \\
+    E' &\rightarrow \textbf{+}\ T\ E' \;\mid\; \textbf{-}\ T\ E' \;\mid\; \varepsilon \\
+    T &\rightarrow F\ T' \\
+    T' &\rightarrow \textbf{*}\ F\ T' \;\mid\; \textbf{/}\ F\ T' \;\mid\; \varepsilon \\
+    F &\rightarrow \textbf{(}\ E\ \textbf{)} \;\mid\; \textbf{id} \;\mid\; \textbf{num}
+\end{align*}
+
+\textbf{Justificación de Precedencia y Asociatividad}:
+\begin{enumerate}[leftmargin=1.8em]
+    \item \textbf{Precedencia jerárquica}: Los operadores multiplicativos ($\texttt{*}, \texttt{/}$) se derivan en un nivel más profundo ($T$ y $T'$) que los aditivos ($\texttt{+}, \texttt{-}$ en $E$ y $E'$), mientras que los paréntesis ($\texttt{( } E \texttt{ )}$) se sitúan en el nivel más interno ($F$). Por ello, en $\texttt{x = a + b * c;}$, el término $T$ correspondiente a $\texttt{b * c}$ se reduce y emite su instrucción temporal $\texttt{t1 = b * c}$ antes de que $E'$ emita la suma $\texttt{t2 = a + t1}$.
+    \item \textbf{Asociatividad por la izquierda}: Aunque $E' \rightarrow \texttt{+} T E'_1$ es recursiva por la derecha sintácticamente, el esquema SDT evalúa primero la operación entre el operando acumulado heredado $E'.\text{inh}$ y el nuevo término $T.\text{place}$, emite el temporal $t = \text{newTemp}()$ y pasa $t$ como atributo heredado $E'_1.\text{inh} = t$ a la llamada recursiva. De este modo, $\texttt{a - b - c}$ se evalúa estrictamente como $\texttt{(a - b) - c}$.
+\end{enumerate}
+
+\subsection{Esquema de Traducción Dirigida por Sintaxis (SDT)}
+El Cuadro~\ref{tab:sdt} especifica formalmente las reglas semánticas ejecutadas en vivo durante el recorrido recursivo del parser $LL(1)$.
+
+\begin{table}[htbp]
+\centering
+\caption{Esquema de Traducción Dirigida por Sintaxis (SDT) con atributos \texttt{.inh} y \texttt{.place}.}
+\label{tab:sdt}
+\footnotesize
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}p{0.28\linewidth}p{0.68\linewidth}@{}}
+\toprule
+\textbf{Producción Gramatical} & \textbf{Acciones Semánticas Ejecutadas Durante el Parsing} \\
+\midrule
+$S \rightarrow \textbf{id}\ \textbf{=}\ E\ \textbf{;}$ &
+$\texttt{emit}(\textbf{id}.\text{lexeme} + \texttt{" = "} + E.\text{place});$ \newline
+$\texttt{symbol\_table.record\_assignment}(\textbf{id}.\text{lexeme}, E.\text{place});$ \\
+\addlinespace[2pt]
+$E \rightarrow T\ E'$ &
+$E'.\text{inh} = T.\text{place};$ \newline
+$E.\text{place} = E'.\text{place};$ \\
+\addlinespace[2pt]
+$E' \rightarrow \textbf{+}\ T\ E'_1$ &
+$t = \texttt{newTemp}();$ \newline
+$\texttt{emit}(t + \texttt{" = "} + E'.\text{inh} + \texttt{" + "} + T.\text{place});$ \newline
+$E'_1.\text{inh} = t;$ \quad $E'.\text{place} = E'_1.\text{place};$ \\
+\addlinespace[2pt]
+$E' \rightarrow \textbf{-}\ T\ E'_1$ &
+$t = \texttt{newTemp}();$ \newline
+$\texttt{emit}(t + \texttt{" = "} + E'.\text{inh} + \texttt{" - "} + T.\text{place});$ \newline
+$E'_1.\text{inh} = t;$ \quad $E'.\text{place} = E'_1.\text{place};$ \\
+\addlinespace[2pt]
+$E' \rightarrow \varepsilon$ &
+$E'.\text{place} = E'.\text{inh};$ \\
+\addlinespace[2pt]
+$T \rightarrow F\ T'$ &
+$T'.\text{inh} = F.\text{place};$ \newline
+$T.\text{place} = T'.\text{place};$ \\
+\addlinespace[2pt]
+$T' \rightarrow \textbf{*}\ F\ T'_1$ &
+$t = \texttt{newTemp}();$ \newline
+$\texttt{emit}(t + \texttt{" = "} + T'.\text{inh} + \texttt{" * "} + F.\text{place});$ \newline
+$T'_1.\text{inh} = t;$ \quad $T'.\text{place} = T'_1.\text{place};$ \\
+\addlinespace[2pt]
+$T' \rightarrow \textbf{/}\ F\ T'_1$ &
+\text{Validar } $F.\text{place} \neq 0$; \quad $t = \texttt{newTemp}();$ \newline
+$\texttt{emit}(t + \texttt{" = "} + T'.\text{inh} + \texttt{" / "} + F.\text{place});$ \newline
+$T'_1.\text{inh} = t;$ \quad $T'.\text{place} = T'_1.\text{place};$ \\
+\addlinespace[2pt]
+$T' \rightarrow \varepsilon$ &
+$T'.\text{place} = T'.\text{inh};$ \\
+\addlinespace[2pt]
+$F \rightarrow \textbf{(}\ E\ \textbf{)}$ &
+$F.\text{place} = E.\text{place};$ \\
+\addlinespace[2pt]
+$F \rightarrow \textbf{id} \;\mid\; \textbf{num}$ &
+$F.\text{place} = \text{token}.\text{lexeme};$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Mecanismos Avanzados e Implementación Real}
+
+\subsubsection{Analizador Léxico Sanitizado (\texttt{lexer/lexer.py})}
+El analizador léxico escanea identificadores, palabras reservadas (\texttt{int}, \texttt{float}), números enteros o decimales bien formados y comentarios de línea o bloque, rechazando explícitamente decimales truncados como \texttt{3.} o \texttt{.5}:
+
+\begin{lstlisting}[language=Python, caption={Lectura de literales numéricos y validación de decimales malformados en \texttt{lexer/lexer.py}.}]
+def _read_number(self, raise_on_error: bool = False) -> Optional[Token]:
+    start_line, start_col = self.line, self.column
+    start_pos = self.pos
+    while self._current() is not None and self._current().isdigit():
+        self._advance()
+    if self._current() == ".":
+        if self._peek() is not None and self._peek().isdigit():
+            self._advance()
+            while self._current() is not None and self._current().isdigit():
+                self._advance()
+        else:
+            self._advance()
+            bad_lexeme = self.source[start_pos : self.pos]
+            err = LexicalError(
+                bad_lexeme, start_line, start_col,
+                f"Literal decimal malformado '{bad_lexeme}' (se esperaban dígitos después del punto)"
+            )
+            self.errors.append(err)
+            if raise_on_error:
+                raise err
+            return None
+    lexeme = self.source[start_pos : self.pos]
+    return Token(TokenType.NUM, lexeme, start_line, start_col)
+\end{lstlisting}
+
+\subsubsection{Traducción Dirigida por Sintaxis y Rollback Atómico (\texttt{parser\_code\_gen/parser.py})}
+En una entrada inválida tardía como \texttt{x = ((a + b) *}, la subexpresión interna \texttt{(a + b)} es sintácticamente válida y emite $\texttt{t1 = a + b}$ durante la reducción de $E'$. Cuando el parser detecta posteriormente el fin de entrada inesperado tras \texttt{*}, el bloque \texttt{except} invoca \texttt{codegen.rollback()}, descartando el buffer transaccional completo y registrando el paso \texttt{ROLLBACK} en la traza:
+
+\begin{lstlisting}[language=Python, caption={Implementación de \texttt{\_parse\_e\_prime} y orquestación transaccional con \texttt{rollback()} en \texttt{parser.py}.}]
+def _parse_e_prime(self, inh: str, inh_type: str) -> Tuple[str, str]:
+    self.tracer.push_frame("E'", inh=inh)
+    if self.current.type in (TokenType.PLUS, TokenType.MINUS):
+        op_tok = self.current
+        op_str = op_tok.lexeme
+        self._expand("E'", [op_str, "T", "E'"],
+                     f"Regla 2: expansión E' -> {op_str} T E' con E'.inh = '{inh}'.")
+        self._match(op_tok.type)
+        t_place, t_type = self._parse_t()
+
+        temp = self.codegen.new_temp()
+        instr = self.codegen.emit(f"{temp} = {inh} {op_str} {t_place}")
+        result_type = self.symbol_table.resolve_binary_type(inh_type, t_type, op_str)
+        final_place, final_type = self._parse_e_prime(temp, result_type)
+        self.tracer.update_top_frame(place=final_place)
+        self.tracer.pop_frame()
+        return final_place, final_type
+
+    if self.current.type in (TokenType.RPAREN, TokenType.SEMICOLON):
+        self._expand("E'", ["ε"], f"Regla 3: E' -> ε; E'.place = E'.inh ('{inh}').")
+        self.tracer.update_top_frame(place=inh)
+        self.tracer.pop_frame()
+        return inh, inh_type
+\end{lstlisting}
+
+\subsubsection{Buffer Transaccional y Optimizador TAC (\texttt{parser\_code\_gen/code\_generator.py})}
+El generador TAC separa el \texttt{\_staging\_buffer} del código consolidado \texttt{\_committed\_code}. Una vez confirmado el análisis exitoso mediante \texttt{commit()}, el método estático \texttt{CodeGenerator.optimize()} aplica cuatro transformaciones iterativas de punto fijo sobre una copia de las instrucciones sin mutar el TAC crudo:
+\begin{enumerate}[leftmargin=1.8em]
+    \item \textbf{Plegado de constantes (\textit{Constant Folding})}: Evalúa en tiempo de compilación operaciones entre literales numéricos (ej.\ $\texttt{t2 = 2 * 3} \rightarrow \texttt{t2 = 6}$), absteniéndose de plegar divisiones entre cero resultantes de subexpresiones constantes ($\texttt{5 / (2 - 2)}$).
+    \item \textbf{Simplificación algebraica}: Reduce identidades aditivas y multiplicativas ($x + 0 \rightarrow x$, $0 + x \rightarrow x$, $x - 0 \rightarrow x$, $x - x \rightarrow 0$, $x * 1 \rightarrow x$, $x * 0 \rightarrow 0$, $x / 1 \rightarrow x$, $0 / x \rightarrow 0$).
+    \item \textbf{Propagación de copias locales}: Sustituye referencias a temporales de copia $t_k = y$ en instrucciones subsecuentes, invalidando la copia si la variable fuente es reasignada en programas multisentencia.
+    \item \textbf{Fusión de temporal redundante y eliminación de código muerto}: Fusiona el par consecutivo $\texttt{t}_k\texttt{ = a op b; x = t}_k$ en $\texttt{x = a op b}$ cuando $\texttt{t}_k$ no se utiliza posteriormente.
+\end{enumerate}
+
+\subsubsection{Paridad en el Motor TypeScript del Visualizador (\texttt{compiler-engine/parser.ts})}
+El motor portado a TypeScript para la herramienta didáctica mantiene exactamente la misma firma y semántica de ejecución que el núcleo en Python:
+
+\begin{lstlisting}[language=TypeScript, caption={Captura de rollback transaccional en el motor TypeScript (\texttt{compiler-engine/parser.ts}).}]
+const parser = new LLParserSDT(tokens, codegen, symbolTable, tracer);
+try {
+  parser.parse();
+} catch (exc: unknown) {
+  if (exc instanceof ParserSyntaxError || exc instanceof SemanticError) {
+    const discarded = codegen.rollback();
+    const phase = exc instanceof ParserSyntaxError ? 'PARSING' : 'SEMANTIC';
+    tracer.record({
+      phase: 'ROLLBACK',
+      action: 'ROLLBACK',
+      tokenIndex: parser.pos,
+      currentToken: parser.current,
+      tacBuffer: [],
+      symbolTableSnapshot: symbolTable.snapshot(),
+      message: `Rollback ejecutado (${discarded.length} instrucción(es) descartada(s)). Causa: ${exc.message}`,
+    });
+    return {
+      source, success: false, strictMode, tokens,
+      tacRaw: [], tacOptimized: [], optimizationNotes: [],
+      symbolTable: symbolTable.entries(),
+      errors: [{ phase, message: exc.message, line: exc.line, column: exc.column }],
+      warnings: [...symbolTable.warnings], trace: [...tracer.steps], tracer,
+    };
+  }
+  throw exc;
+}
+\end{lstlisting}
+
+% ============================================================================
+% SECCIÓN 4: MANUAL DE EJECUCIÓN
+% ============================================================================
+\section{Manual de Ejecución}
+
+\subsection{Estructura de Directorios del Proyecto}
+\begin{lstlisting}[numbers=none, caption={Árbol de archivos del repositorio del compilador.}]
+Compiler/
+|-- lexer/
+|   |-- __init__.py
+|   |-- tokens.py               # TokenType, Token(type, lexeme, line, column), LexicalError
+|   `-- lexer.py                # Analizador léxico sin efectos secundarios
+|-- parser_code_gen/
+|   |-- __init__.py
+|   |-- parser.py               # LLParserSDT, ParserSyntaxError, CompilationResult, compile_source()
+|   |-- code_generator.py       # TACInstruction, CodeGenerator (newTemp, emit, commit, rollback, optimize)
+|   |-- symbol_table.py         # SymbolTable jerárquica por ámbitos, SymbolEntry, SemanticError
+|   `-- tracer.py               # AttributeFrame, TraceStep, CompilerTracer
+|-- main/
+|   `-- main.py                 # CLI interactivo y por banderas (--official, -e, -f, --trace)
+|-- web-visualizer/             # Aporte didáctico: Visualizador Web Interactivo (Angular + TypeScript)
+`-- reporte_proyecto_final.tex  # Presente reporte técnico en LaTeX
+\end{lstlisting}
+
+\subsection{Requisitos y Ejecución del Compilador en Python}
+\textbf{Requisitos}: Python 3.10 o superior (únicamente biblioteca estándar, sin dependencias externas).
+
+\begin{enumerate}[leftmargin=1.8em]
+    \item \textbf{Menú interactivo en consola}:
+\begin{lstlisting}[numbers=none]
+python main/main.py
+\end{lstlisting}
+    \item \textbf{Ejecución de la batería oficial de ejemplos del PDF}:
+\begin{lstlisting}[numbers=none]
+python main/main.py --official
+\end{lstlisting}
+    \item \textbf{Compilación directa de una expresión mostrando la traza completa paso a paso}:
+\begin{lstlisting}[numbers=none]
+python main/main.py -e "x = a + b * c;" --trace
+\end{lstlisting}
+\end{enumerate}
+
+% ============================================================================
+% SECCIÓN 5: PRUEBAS REALIZADAS Y ANÁLISIS DE RESULTADOS
+% ============================================================================
+\section{Pruebas Realizadas y Análisis de Resultados}
+
+A continuación se documentan exhaustivamente los \textbf{7 casos oficiales del documento de requerimientos} (4 válidos y 3 inválidos) junto con los casos borde adicionales verificados por la suite automatizada.
+
+\subsection{Casos de Prueba Válidos Oficiales}
+
+% --- Caso Válido (a) ---
+\subsubsection{Caso Válido (a): Asignación Simple \texttt{x = a;}}
+\begin{tracebox}{Caso Válido (a) --- Entrada: \texttt{x = a;}}
+\begin{itemize}[leftmargin=1.5em, itemsep=2pt]
+    \item \textbf{Secuencia de Tokens}: \texttt{(ID, 'x', L1:C1)}, \texttt{(ASSIGN, '=', L1:C3)}, \texttt{(ID, 'a', L1:C5)}, \texttt{(SEMICOLON, ';', L1:C6)}, \texttt{(EOF, '\$', L1:C7)}.
+    \item \textbf{Evolución de Atributos SDT}:
+    \begin{enumerate}[leftmargin=1.5em]
+        \item $F \rightarrow \textbf{id}$ consume \texttt{'a'} y sintetiza $F.\text{place} = \texttt{"a"}$.
+        \item $T \rightarrow F\ T'$ pasa $T'.\text{inh} = \texttt{"a"}$; con lookahead \texttt{';'}, $T' \rightarrow \varepsilon$ retorna $T'.\text{place} = \texttt{"a"}$ y $T.\text{place} = \texttt{"a"}$.
+        \item $E \rightarrow T\ E'$ pasa $E'.\text{inh} = \texttt{"a"}$; con lookahead \texttt{';'}, $E' \rightarrow \varepsilon$ retorna $E'.\text{place} = \texttt{"a"}$ y $E.\text{place} = \texttt{"a"}$.
+        \item $S \rightarrow \textbf{id = } E \textbf{ ;}$ consume \texttt{';'} y ejecuta $\texttt{emit("x = a")}$.
+    \end{enumerate}
+    \item \textbf{Tabla de Símbolos}: \texttt{a} (\textit{inferred}, global, no inicializada), \texttt{x} (\textit{inferred}, global, inicializada, \texttt{last\_place = "a"}).
+    \item \textbf{TAC Crudo}: \texttt{["x = a"]} \quad $|$ \quad \textbf{TAC Optimizado}: \texttt{["x = a"]}.
+\end{itemize}
+\end{tracebox}
+
+% --- Caso Válido (b) ---
+\subsubsection{Caso Válido (b): Suma Binaria \texttt{x = a + b;}}
+\begin{tracebox}{Caso Válido (b) --- Entrada: \texttt{x = a + b;}}
+\begin{itemize}[leftmargin=1.5em, itemsep=2pt]
+    \item \textbf{Secuencia de Tokens}: \texttt{(ID, 'x')}, \texttt{(ASSIGN, '=')}, \texttt{(ID, 'a')}, \texttt{(PLUS, '+')}, \texttt{(ID, 'b')}, \texttt{(SEMICOLON, ';')}, \texttt{(EOF, '\$')}.
+    \item \textbf{Evolución de Atributos SDT}:
+    \begin{enumerate}[leftmargin=1.5em]
+        \item El primer término reduce \texttt{'a'} hacia $T.\text{place} = \texttt{"a"}$ y lo transfiere como $E'.\text{inh} = \texttt{"a"}$.
+        \item En $E' \rightarrow \textbf{+}\ T\ E'_1$, se empareja \texttt{'+'}, el segundo término sintetiza $T.\text{place} = \texttt{"b"}$, se crea $\texttt{t1} = \texttt{newTemp}()$ y se emite $\texttt{t1 = a + b}$.
+        \item Se pasa $E'_1.\text{inh} = \texttt{"t1"}$; ante \texttt{';'}, $E'_1 \rightarrow \varepsilon$ sintetiza $E.\text{place} = \texttt{"t1"}$.
+        \item Al cerrar $S$, se emite $\texttt{x = t1}$.
+    \end{enumerate}
+    \item \textbf{TAC Crudo}:
+    \begin{lstlisting}[numbers=none]
+t1 = a + b
+x = t1
+    \end{lstlisting}
+    \item \textbf{TAC Optimizado} (fusión de temporal redundante $\texttt{t1}$):
+    \begin{lstlisting}[numbers=none]
+x = a + b
+    \end{lstlisting}
+\end{itemize}
+\end{tracebox}
+
+% --- Caso Válido (c) ---
+\subsubsection{Caso Válido (c): Precedencia de Multiplicación sobre Suma \texttt{x = a + b * c;}}
+\begin{tracebox}{Caso Válido (c) --- Entrada: \texttt{x = a + b * c;}}
+\begin{itemize}[leftmargin=1.5em, itemsep=2pt]
+    \item \textbf{Secuencia de Tokens}: \texttt{(ID, 'x')}, \texttt{(ASSIGN, '=')}, \texttt{(ID, 'a')}, \texttt{(PLUS, '+')}, \texttt{(ID, 'b')}, \texttt{(STAR, '*')}, \texttt{(ID, 'c')}, \texttt{(SEMICOLON, ';')}, \texttt{(EOF, '\$')}.
+    \item \textbf{Evolución de Atributos SDT}:
+    \begin{enumerate}[leftmargin=1.5em]
+        \item El primer término reduce \texttt{'a'} ($T.\text{place} = \texttt{"a"}$) y $E'$ recibe $E'.\text{inh} = \texttt{"a"}$.
+        \item Tras consumir \texttt{'+'}, se invoca a $T \rightarrow F\ T'$ para evaluar el segundo operando: $F$ sintetiza $\texttt{"b"}$ y lo pasa a $T'.\text{inh} = \texttt{"b"}$.
+        \item Como el lookahead es \texttt{'*'}, $T' \rightarrow \textbf{*}\ F\ T'_1$ consume \texttt{'*'}, evalúa $F.\text{place} = \texttt{"c"}$, genera $\texttt{t1} = \texttt{newTemp}()$ y emite primero el producto: $\texttt{t1 = b * c}$.
+        \item $T'_1 \rightarrow \varepsilon$ sintetiza $T.\text{place} = \texttt{"t1"}$ hacia $E'$, el cual genera $\texttt{t2} = \texttt{newTemp}()$ y emite la suma: $\texttt{t2 = a + t1}$.
+        \item Finalmente, $S$ emite la asignación: $\texttt{x = t2}$.
+    \end{enumerate}
+    \item \textbf{TAC Crudo} (3 instrucciones):
+    \begin{lstlisting}[numbers=none]
+t1 = b * c
+t2 = a + t1
+x = t2
+    \end{lstlisting}
+    \item \textbf{TAC Optimizado} (2 instrucciones, fusión de $\texttt{t2}$ en $\texttt{x}$):
+    \begin{lstlisting}[numbers=none]
+t1 = b * c
+x = a + t1
+    \end{lstlisting}
+\end{itemize}
+\end{tracebox}
+
+% --- Caso Válido (d) ---
+\subsubsection{Caso Válido (d): Agrupación con Paréntesis \texttt{x = (a + b) * c;}}
+\begin{tracebox}{Caso Válido (d) --- Entrada: \texttt{x = (a + b) * c;}}
+\begin{itemize}[leftmargin=1.5em, itemsep=2pt]
+    \item \textbf{Secuencia de Tokens}: \texttt{(ID, 'x')}, \texttt{(ASSIGN, '=')}, \texttt{(LPAREN, '(')}, \texttt{(ID, 'a')}, \texttt{(PLUS, '+')}, \texttt{(ID, 'b')}, \texttt{(RPAREN, ')')}, \texttt{(STAR, '*')}, \texttt{(ID, 'c')}, \texttt{(SEMICOLON, ';')}, \texttt{(EOF, '\$')}.
+    \item \textbf{Evolución de Atributos SDT}:
+    \begin{enumerate}[leftmargin=1.5em]
+        \item $F \rightarrow \textbf{(}\ E\ \textbf{)}$ abre una subderivación completa de $E$ para \texttt{a + b}, la cual emite primero $\texttt{t1 = a + b}$ y sintetiza $F.\text{place} = \texttt{"t1"}$ al cerrar \texttt{')'}.
+        \item $T'$ recibe $T'.\text{inh} = \texttt{"t1"}$, empareja \texttt{'*'}, lee $F.\text{place} = \texttt{"c"}$ y emite $\texttt{t2 = t1 * c}$.
+        \item $E' \rightarrow \varepsilon$ propaga $\texttt{"t2"}$ hacia $S$, que emite $\texttt{x = t2}$.
+    \end{enumerate}
+    \item \textbf{TAC Crudo}:
+    \begin{lstlisting}[numbers=none]
+t1 = a + b
+t2 = t1 * c
+x = t2
+    \end{lstlisting}
+    \item \textbf{TAC Optimizado}:
+    \begin{lstlisting}[numbers=none]
+t1 = a + b
+x = t1 * c
+    \end{lstlisting}
+\end{itemize}
+\end{tracebox}
+
+\subsection{Casos de Prueba Inválidos Oficiales y Verificación de Atomicidad}
+
+% --- Caso Inválido (a) ---
+\subsubsection{Caso Inválido (a): Operador Duplicado \texttt{x = a + * b;}}
+\begin{errbox}{Caso Inválido (a) --- Entrada: \texttt{x = a + * b;}}
+\begin{itemize}[leftmargin=1.5em, itemsep=2pt]
+    \item \textbf{Tokens Reconocidos}: \texttt{(ID, 'x')}, \texttt{(ASSIGN, '=')}, \texttt{(ID, 'a')}, \texttt{(PLUS, '+')}, \texttt{(STAR, '*', L1:C9)}, \texttt{(ID, 'b')}, \texttt{(SEMICOLON, ';')}, \texttt{(EOF, '\$')}.
+    \item \textbf{Punto de Falla}: Tras consumir \texttt{'+'} en $E' \rightarrow \textbf{+}\ T\ E'$, el método \texttt{\_parse\_t()} verifica $\text{FIRST}(T) = \{\texttt{'('}, \texttt{id}, \texttt{num}\}$, pero encuentra el token \texttt{STAR ('*')} en línea 1, columna 9.
+    \item \textbf{Diagnóstico Emitido}: \texttt{[PARSING] Error sintáctico en línea 1, columna 9: Se esperaba un factor ('(', 'id' o 'num'), pero se encontró '*'}.
+    \item \textbf{Estado del Buffer TAC}: \texttt{rollback()} ejecutado (0 instrucciones emitidas; \texttt{tac\_raw = []}).
+\end{itemize}
+\end{errbox}
+
+% --- Caso Inválido (b) ---
+\subsubsection{Caso Inválido (b): Paréntesis sin Cerrar \texttt{x = (a + b;}}
+\begin{errbox}{Caso Inválido (b) --- Entrada: \texttt{x = (a + b;}}
+\begin{itemize}[leftmargin=1.5em, itemsep=2pt]
+    \item \textbf{Tokens Reconocidos}: \texttt{(ID, 'x')}, \texttt{(ASSIGN, '=')}, \texttt{(LPAREN, '(')}, \texttt{(ID, 'a')}, \texttt{(PLUS, '+')}, \texttt{(ID, 'b')}, \texttt{(SEMICOLON, ';', L1:C11)}, \texttt{(EOF, '\$')}.
+    \item \textbf{Comportamiento Interno}: La expresión interna \texttt{a + b} llega a emitir $\texttt{t1 = a + b}$ en el buffer transaccional y reduce $E' \rightarrow \varepsilon$ porque $\texttt{';'} \in \text{FOLLOW}(E')$. Sin embargo, al retornar a $F \rightarrow \textbf{(}\ E\ \textbf{)}$, el llamado a \texttt{\_match(TokenType.RPAREN)} falla al encontrar \texttt{';'} en lugar de \texttt{')'}.
+    \item \textbf{Diagnóstico Emitido}: \texttt{[PARSING] Error sintáctico en línea 1, columna 11: Se esperaba ')', pero se encontró ';' (;)}.
+    \item \textbf{Verificación de Atomicidad}: El evento \texttt{ROLLBACK} descarta la instrucción temporal $\texttt{t1 = a + b}$, garantizando \texttt{tac\_raw = []} y \texttt{tac\_optimized = []}.
+\end{itemize}
+\end{errbox}
+
+% --- Caso Inválido (c) ---
+\subsubsection{Caso Inválido (c): Error Tardío con Rollback Transaccional \texttt{x = ((a + b) *}}
+\begin{errbox}{Caso Inválido (c) --- Entrada: \texttt{x = ((a + b) *}}
+\begin{itemize}[leftmargin=1.5em, itemsep=2pt]
+    \item \textbf{Tokens Reconocidos}: \texttt{(ID, 'x')}, \texttt{(ASSIGN, '=')}, \texttt{(LPAREN, '(')}, \texttt{(LPAREN, '(')}, \texttt{(ID, 'a')}, \texttt{(PLUS, '+')}, \texttt{(ID, 'b')}, \texttt{(RPAREN, ')')}, \texttt{(STAR, '*')}, \texttt{(EOF, '\$', L1:C15)}.
+    \item \textbf{Comportamiento Interno}: El grupo interno \texttt{(a + b)} se empareja por completo y emite $\texttt{t1 = a + b}$ en el \texttt{\_staging\_buffer}. A continuación, $T'$ consume \texttt{'*'} e invoca a \texttt{\_parse\_f()}, donde el lookahead es \texttt{EOF ('\$')}.
+    \item \textbf{Diagnóstico Emitido}: \texttt{[PARSING] Error sintáctico en línea 1, columna 15: Factor inválido: se esperaba '(', 'id' o 'num', pero se encontró '\$'}.
+    \item \textbf{Verificación de Atomicidad}: \texttt{codegen.rollback()} vacía la instrucción $\texttt{t1 = a + b}$ previamente depositada en el buffer. El resultado final reporta \textbf{0 instrucciones TAC}.
+\end{itemize}
+\end{errbox}
+
+\subsection{Casos Borde Adicionales y Resumen Comparativo}
+El Cuadro~\ref{tab:resumen_pruebas} sintetiza los resultados de los 7 casos oficiales y los casos borde adicionales ejecutados por la suite \texttt{tests/test\_compiler.py} (25/25 pruebas aprobadas).
+
+\begin{table}[htbp]
+\centering
+\caption{Resumen integral de validación de los casos oficiales y casos borde.}
+\label{tab:resumen_pruebas}
+\footnotesize
+\renewcommand{\arraystretch}{1.28}
+\begin{tabular}{@{}p{0.22\linewidth}p{0.23\linewidth}cp{0.42\linewidth}@{}}
+\toprule
+\textbf{Caso de Prueba} & \textbf{Entrada Fuente} & \textbf{Estado} & \textbf{Salida TAC Crudo / Diagnóstico y Rollback} \\
+\midrule
+Válido (a) & \texttt{x = a;} & Válida & \texttt{x = a} \\
+Válido (b) & \texttt{x = a + b;} & Válida & \texttt{t1 = a + b}, \texttt{x = t1} $\rightarrow$ Opt: \texttt{x = a + b} \\
+Válido (c) & \texttt{x = a + b * c;} & Válida & \texttt{t1 = b * c}, \texttt{t2 = a + t1}, \texttt{x = t2} \\
+Válido (d) & \texttt{x = (a + b) * c;} & Válida & \texttt{t1 = a + b}, \texttt{t2 = t1 * c}, \texttt{x = t2} \\
+Compacto sin espacios & \texttt{x=(a+b)*c;} & Válida & \texttt{t1 = a + b}, \texttt{t2 = t1 * c}, \texttt{x = t2} \\
+Asociatividad izq.\ (\texttt{-}) & \texttt{x = a - b - c;} & Válida & \texttt{t1 = a - b}, \texttt{t2 = t1 - c}, \texttt{x = t2} \\
+Plegado + identidad & \texttt{x = a + 0 + 2 * 3;} & Válida & Crudo: 4 instr.\ $\rightarrow$ Opt: \texttt{x = a + 6} \\
+\midrule
+Inválido (a) & \texttt{x = a + * b;} & Inválida & Error sintáctico L1:C9 (\texttt{'*'} inesperado) $\cdot$ 0 TAC \\
+Inválido (b) & \texttt{x = (a + b;} & Inválida & Error sintáctico L1:C11 (falta \texttt{')'}) $\cdot$ Rollback (\texttt{t1} descartado) \\
+Inválido (c) & \texttt{x = ((a + b) *} & Inválida & Error sintáctico L1:C15 (\texttt{'\$'} tras \texttt{'*'}) $\cdot$ Rollback (\texttt{t1} descartado) \\
+Error léxico & \texttt{x = a @ b;} & Inválida & Error léxico L1:C7 (símbolo \texttt{'@'}) $\cdot$ 0 TAC \\
+Decimal malformado & \texttt{x = 3.;} / \texttt{x = .5;} & Inválida & Error léxico L1:C5 (decimal malformado) $\cdot$ 0 TAC \\
+Falta \texttt{';'} obligatorio & \texttt{x = a + b} & Inválida & Error sintáctico L1:C10 (falta \texttt{';'} o \texttt{')'}) $\cdot$ Rollback \\
+División entre cero & \texttt{x = a / 0.00;} & Inválida & Error semántico L1:C7 (división entre 0) $\cdot$ Rollback \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================================
+% SECCIÓN 6: CONCLUSIONES
+% ============================================================================
+\section{Conclusiones}
+
+\begin{enumerate}[leftmargin=1.8em]
+    \item \textbf{Integración Modular y Contrato de Datos Inmutable}: La estandarización del objeto \texttt{Token(type, lexeme, line, column)} eliminó por completo el acoplamiento y los efectos secundarios entre el analizador léxico y el parser $LL(1)$. Esto permitió que cada fase reportara diagnósticos precisos con número de línea y columna y que el mismo contrato de telemetría (\texttt{TraceStep}) fuera consumido de manera uniforme tanto en consola como en la interfaz visual.
+    \item \textbf{Traducción Dirigida por Sintaxis $L$-Atribuida en Parsers Recursivos}: Se comprobó en la práctica cómo la combinación de argumentos de función para representar atributos heredados ($\texttt{.inh}$) y valores de retorno para atributos sintetizados ($\texttt{.place}$) resuelve el problema clásico de asociatividad izquierda al eliminar la recursión izquierda en gramáticas $LL(1)$. Mientras las llamadas recursivas de $E'$ y $T'$ descienden hacia la derecha, la emisión de instrucciones $\texttt{emit}(t = \text{inh}\ \text{op}\ \text{place})$ ocurre de izquierda a derecha antes de descender al siguiente nivel.
+    \item \textbf{Atomicidad Mediante Buffer Transaccional}: En un esquema SDT que emite código durante el parsing, una expresión parcialmente válida como \texttt{x = ((a + b) *} genera instrucciones temporales reales antes de alcanzar el token defectuoso. El diseño de un buffer transaccional con \texttt{commit()} y \texttt{rollback()} resultó indispensable para cumplir el principio de atomicidad del compilador: o la sentencia es 100\% válida y su código se consolida, o cualquier error posterior revierte el estado a cero instrucciones emitidas.
+    \item \textbf{Aporte Personal Didáctico para Futuros Cursos}: La construcción e integración del visualizador web interactivo permitió traducir la ejecución interna del compilador en una herramienta pedagógica accesible para estudiantes de la asignatura. Este recurso queda a disposición de la profesora Melissa Brigitthe Hinojosa y del Departamento de Computación de la Facultad de Ingeniería como material de apoyo para ilustrar de forma interactiva la interacción entre el análisis léxico, la pila predictiva $LL(1)$, la propagación de atributos semánticos y la generación y optimización de código intermedio.
+\end{enumerate}
+
+\end{document}
