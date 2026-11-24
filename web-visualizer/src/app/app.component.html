@@ -34,27 +34,6 @@
       <button
         type="button"
         class="ghost-pill"
-        [class.pill-active]="strictMode()"
-        (click)="toggleStrictMode()"
-        title="Alternar entre Modo Compatible (inferencia) y Modo Estricto (declaración obligatoria)"
-      >
-        <span class="status-dot" [class.dot-active]="strictMode()"></span>
-        Modo Semántico:
-        <strong>{{ strictMode() ? 'Estricto' : 'Compatible' }}</strong>
-      </button>
-
-      <button
-        type="button"
-        class="ghost-pill"
-        (click)="downloadTraceJson()"
-        title="Descargar TraceStep[] en formato JSON"
-      >
-        Exportar JSON
-      </button>
-
-      <button
-        type="button"
-        class="ghost-pill"
         [class.pill-active]="lightTheme()"
         (click)="toggleTheme()"
         title="Alternar contraste claro para proyector"
